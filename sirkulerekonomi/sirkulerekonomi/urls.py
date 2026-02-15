@@ -10,6 +10,7 @@ from wagtail.contrib.sitemaps.views import sitemap
 
 from .views import robots_txt
 from home.feeds import ArticleFeed
+from articles.api_views import post_article
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -18,6 +19,7 @@ urlpatterns = [
     path('sitemap.xml', sitemap),
     path('robots.txt', robots_txt),
     path('feed/', ArticleFeed()),
+    path('api/articles/', post_article),
 ]
 
 urlpatterns += i18n_patterns(

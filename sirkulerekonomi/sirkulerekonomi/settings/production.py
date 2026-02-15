@@ -1,9 +1,25 @@
 import os
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
 from .base import *  # noqa
 
 DEBUG = False
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'change-me-in-production')
+
+SENTRY_DSN = os.environ.get(
+    'SENTRY_DSN',
+    'https://6d34ded45aefc62ce6ddd6724d78bf30@o118008.ingest.us.sentry.io/4510889381920768',
+)
+if SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        integrations=[DjangoIntegration()],
+        environment='production',
+        traces_sample_rate=0.1,
+        send_default_pii=False,
+    )
 
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'sirkulerekonomi.com,www.sirkulerekonomi.com').split(',')
 

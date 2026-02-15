@@ -37,3 +37,7 @@
 ### Database
 
 The project uses **SQLite**. The database file is at `sirkulerekonomi/data/db.sqlite3` (create the `data` directory if needed). No separate database container is used.
+
+### Article API
+
+`POST /api/articles/` creates an article under the Haberler section. It is protected by a shared secret: set `ARTICLE_API_SECRET` in the environment and send it in the `X-API-Key` header (or `Authorization: Bearer <secret>`). Request body: JSON with `title` (required), optional `intro` and `body` (HTML).

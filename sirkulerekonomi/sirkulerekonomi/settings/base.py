@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -115,6 +116,8 @@ WAGTAILADMIN_BASE_URL = 'https://sirkulerekonomi.com'
 WAGTAILDOCS_EXTENSIONS = ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'txt', 'xlsx', 'zip']
 
 STATICFILES_DIRS = [BASE_DIR / 'static']
+
+ARTICLE_API_SECRET = os.environ.get('ARTICLE_API_SECRET', '')
 
 CACHES = {
     'default': {

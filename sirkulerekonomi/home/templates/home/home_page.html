@@ -4,45 +4,90 @@
 {% block title %}Sirküler Ekonomi – Sürdürülebilirlik ve döngüsel ekonomi haberleri{% endblock %}
 
 {% block content %}
-<section class="mb-16">
-    <div class="bg-forest-900 text-white rounded-2xl overflow-hidden shadow-xl">
-        <div class="max-w-4xl mx-auto px-6 sm:px-10 py-16 sm:py-24 text-center">
-            <h1 class="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight mb-4">Sirküler Ekonomi</h1>
-            <p class="text-xl sm:text-2xl text-forest-200 font-body max-w-2xl mx-auto">Sürdürülebilirlik ve döngüsel ekonomi haberleri</p>
-        </div>
-    </div>
-</section>
+{% cache 300 home_articles page.id %}
 
-<section>
-    <h2 class="font-display text-2xl sm:text-3xl font-bold text-forest-900 mb-8">Son Yazılar</h2>
-    {% cache 300 home_articles page.id %}
-    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {% for article in articles %}
-        <a href="{% pageurl article %}" class="group block bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md hover:border-forest-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 rounded-xl">
+{% for article in articles %}
+{% if forloop.first %}
+<section class="mb-12 sm:mb-16">
+    <a href="{% pageurl article %}" class="group block">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center">
             {% if article.main_image %}
-            <div class="aspect-[16/10] overflow-hidden bg-gray-100">
+            <div class="aspect-[16/10] lg:aspect-[4/3] overflow-hidden rounded-xl bg-gray-100">
+                {% image article.main_image fill-900x600 class="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500" alt=article.title %}
+            </div>
+            {% else %}
+            <div class="aspect-[16/10] lg:aspect-[4/3] bg-forest-50 rounded-xl flex items-center justify-center">
+                <span class="text-forest-400 text-6xl font-display">SE</span>
+            </div>
+            {% endif %}
+            <div class="py-2 lg:py-4">
+                <time class="text-xs text-ink-500 font-semibold uppercase tracking-wider" datetime="{{ article.first_published_at|date:'c' }}">{{ article.first_published_at|date:"d F Y" }}</time>
+                <h2 class="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-forest-900 mt-3 leading-tight group-hover:text-forest-600 transition-colors">{{ article.title }}</h2>
+                {% if article.intro %}
+                <p class="text-ink-600 text-lg mt-4 leading-relaxed line-clamp-3">{{ article.intro }}</p>
+                {% endif %}
+                <span class="inline-block mt-5 text-sm font-semibold text-forest-600 group-hover:text-forest-700 border-b-2 border-forest-400 group-hover:border-forest-600 transition-colors">Devamını oku &rarr;</span>
+            </div>
+        </div>
+    </a>
+</section>
+<hr class="border-ink-100 mb-10 sm:mb-14">
+{% endif %}
+{% endfor %}
+
+<section class="mb-12 sm:mb-16">
+    <h2 class="font-display text-xl sm:text-2xl font-bold text-forest-900 mb-8">Son Yazılar</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for article in articles %}
+        {% if forloop.counter >= 2 and forloop.counter <= 4 %}
+        <a href="{% pageurl article %}" class="group block">
+            {% if article.main_image %}
+            <div class="aspect-[16/10] overflow-hidden rounded-lg bg-gray-100 mb-4">
                 {% image article.main_image fill-600x375 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt=article.title %}
             </div>
             {% else %}
-            <div class="aspect-[16/10] bg-gray-200 flex items-center justify-center">
-                <span class="text-forest-600 text-4xl font-display">SE</span>
+            <div class="aspect-[16/10] bg-forest-50 rounded-lg flex items-center justify-center mb-4">
+                <span class="text-forest-400 text-3xl font-display">SE</span>
             </div>
             {% endif %}
-            <div class="p-5">
-                <time class="text-xs text-ink-500 font-medium uppercase tracking-wider" datetime="{{ article.first_published_at|date:'c' }}">{{ article.first_published_at|date:"d F Y" }}</time>
-                <h3 class="font-display text-lg font-bold text-forest-900 mt-2 line-clamp-2 group-hover:text-forest-600 transition-colors">{{ article.title }}</h3>
-                {% if article.intro %}
-                <p class="text-ink-600 text-sm mt-2 line-clamp-2">{{ article.intro }}</p>
-                {% endif %}
-            </div>
+            <time class="text-xs text-ink-500 font-semibold uppercase tracking-wider" datetime="{{ article.first_published_at|date:'c' }}">{{ article.first_published_at|date:"d F Y" }}</time>
+            <h3 class="font-display text-lg font-bold text-forest-900 mt-2 line-clamp-2 group-hover:text-forest-600 transition-colors leading-snug">{{ article.title }}</h3>
+            {% if article.intro %}
+            <p class="text-ink-600 text-sm mt-2 line-clamp-2">{{ article.intro }}</p>
+            {% endif %}
         </a>
-        {% empty %}
-        <p class="text-ink-500 col-span-full">Henüz yayınlanmış yazı yok.</p>
+        {% endif %}
         {% endfor %}
     </div>
-    {% endcache %}
-    <div class="mt-10 text-center">
-        <a href="/haberler/" class="inline-flex items-center font-medium text-forest-600 hover:text-forest-700 border-b-2 border-forest-400 hover:border-forest-600 transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 rounded">Tüm haberler</a>
+</section>
+
+{% with remaining_articles=articles|slice:"4:" %}
+{% if remaining_articles %}
+<hr class="border-ink-100 mb-10 sm:mb-14">
+<section class="mb-12">
+    <h2 class="font-display text-xl sm:text-2xl font-bold text-forest-900 mb-6">Diğer Yazılar</h2>
+    <div class="divide-y divide-ink-100">
+        {% for article in remaining_articles %}
+        <a href="{% pageurl article %}" class="group flex items-baseline justify-between gap-4 py-4 hover:bg-forest-50 -mx-3 px-3 rounded transition-colors">
+            <h3 class="font-display text-base font-bold text-forest-900 group-hover:text-forest-600 transition-colors line-clamp-1 flex-1">{{ article.title }}</h3>
+            <time class="text-xs text-ink-500 font-medium whitespace-nowrap" datetime="{{ article.first_published_at|date:'c' }}">{{ article.first_published_at|date:"d M Y" }}</time>
+        </a>
+        {% endfor %}
     </div>
 </section>
+{% endif %}
+{% endwith %}
+
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mt-10 pt-10 border-t border-ink-100">
+    <div class="max-w-lg">
+        <h2 class="font-display text-lg font-bold text-forest-900">Sirküler Ekonomi Hakkında</h2>
+        <p class="text-sm text-ink-600 mt-2 leading-relaxed">Döngüsel ekonomi, sürdürülebilirlik ve çevre alanındaki en güncel haberleri ve analizleri sunuyoruz.</p>
+    </div>
+    <a href="/haberler/" class="inline-flex items-center gap-2 bg-forest-600 text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-forest-700 transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2">
+        Tüm haberler
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+    </a>
+</div>
+
+{% endcache %}
 {% endblock %}

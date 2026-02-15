@@ -26,40 +26,110 @@
 
 {% block content %}
 {% cache 600 article_content page.id page.last_published_at %}
+
+<nav class="max-w-3xl mx-auto mb-6" aria-label="Gezinti">
+    <ol class="flex items-center gap-2 text-sm text-ink-500">
+        <li><a href="/" class="hover:text-forest-600 transition-colors">Anasayfa</a></li>
+        <li aria-hidden="true" class="text-ink-300">/</li>
+        <li><a href="/haberler/" class="hover:text-forest-600 transition-colors">Haberler</a></li>
+        <li aria-hidden="true" class="text-ink-300">/</li>
+        <li class="text-ink-700 font-medium truncate max-w-[200px]" aria-current="page">{{ page.title }}</li>
+    </ol>
+</nav>
+
 <article class="max-w-3xl mx-auto">
-    <header class="mb-8">
-        <h1 class="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-forest-900 leading-tight">{{ page.title }}</h1>
-        <div class="flex flex-wrap items-center gap-3 mt-4 text-ink-500 text-sm">
+    <header class="mb-10">
+        <span class="inline-block bg-forest-50 text-forest-700 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-4">Döngüsel Ekonomi</span>
+        <h1 class="font-display text-3xl sm:text-4xl md:text-[2.75rem] font-bold text-forest-900 leading-[1.15]">{{ page.title }}</h1>
+        <div class="flex flex-wrap items-center gap-3 mt-5 text-ink-500 text-sm">
             <time datetime="{{ page.first_published_at|date:'c' }}">{{ page.first_published_at|date:"d F Y" }}</time>
+            {% if page.last_published_at and page.last_published_at != page.first_published_at %}
+            <span class="text-ink-300">|</span>
+            <span>Güncellendi: {{ page.last_published_at|date:"d F Y" }}</span>
+            {% endif %}
         </div>
         {% if page.main_image %}
-        <figure class="mt-6 rounded-xl overflow-hidden shadow-lg">
-            {% image page.main_image width-800 class="w-full h-auto" alt=page.title %}
+        <figure class="mt-8 -mx-4 sm:mx-0 sm:rounded-xl overflow-hidden">
+            {% image page.main_image width-900 class="w-full h-auto" alt=page.title %}
         </figure>
         {% endif %}
     </header>
 
     {% if page.intro %}
-    <p class="text-xl text-ink-700 font-medium mb-8">{{ page.intro }}</p>
+    <p class="text-xl sm:text-2xl text-ink-700 font-display italic leading-relaxed mb-10 pb-8 border-b border-ink-100">{{ page.intro }}</p>
     {% endif %}
 
-    <div class="prose prose-lg max-w-none prose-headings:font-display prose-headings:text-forest-900 prose-p:text-ink-700 prose-a:text-forest-600 prose-a:no-underline hover:prose-a:underline prose-blockquote:border-forest-400 prose-blockquote:bg-gray-50 prose-blockquote:py-1 prose-blockquote:px-4 prose-img:rounded-lg">
+    <div class="article-body">
         {% for block in page.body %}
         {% if block.block_type == 'heading' %}
-        <h2 class="font-display text-2xl font-bold text-forest-900 mt-10 mb-4">{{ block.value }}</h2>
+        <h2 class="font-display text-xl sm:text-2xl font-bold text-forest-900 mt-12 mb-4">{{ block.value }}</h2>
         {% elif block.block_type == 'paragraph' %}
-        <div class="mb-4">{{ block.value|richtext }}</div>
+        <div class="text-ink-700 text-lg leading-[1.8] mb-6">{{ block.value|richtext }}</div>
         {% elif block.block_type == 'image' %}
-        <figure class="my-8">
+        <figure class="my-10 -mx-4 sm:mx-0">
             {% with alt_text=block.value.title|default:page.title %}
-            {% image block.value width-800 class="w-full h-auto rounded-lg" alt=alt_text %}
+            {% image block.value width-900 class="w-full h-auto sm:rounded-lg" alt=alt_text %}
             {% endwith %}
         </figure>
         {% elif block.block_type == 'blockquote' %}
-        <blockquote class="border-l-4 border-forest-400 bg-gray-50 py-2 px-4 my-6 italic text-ink-700">{{ block.value }}</blockquote>
+        <blockquote class="my-10 pl-6 border-l-4 border-forest-500 bg-forest-50 py-5 pr-6 rounded-r-lg">
+            <p class="text-lg text-ink-700 italic font-display leading-relaxed">{{ block.value }}</p>
+        </blockquote>
         {% endif %}
         {% endfor %}
     </div>
+
+    <div class="mt-12 pt-8 border-t border-ink-100">
+        <span class="text-sm font-semibold text-ink-500 uppercase tracking-wider">Paylaş</span>
+        <div class="flex items-center gap-3 mt-3">
+            <a href="https://twitter.com/intent/tweet?url={{ page.full_url|urlencode }}&text={{ page.title|urlencode }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-ink-100 text-ink-700 text-sm font-medium hover:bg-ink-200 transition-colors" aria-label="X/Twitter'da paylaş">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                X
+            </a>
+            <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ page.full_url|urlencode }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-ink-100 text-ink-700 text-sm font-medium hover:bg-ink-200 transition-colors" aria-label="LinkedIn'de paylaş">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                LinkedIn
+            </a>
+            <button onclick="navigator.clipboard.writeText('{{ page.full_url }}').then(function(){this.textContent='Kopyalandı!'}.bind(this))" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-ink-100 text-ink-700 text-sm font-medium hover:bg-ink-200 transition-colors" aria-label="Bağlantı kopyala">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                Kopyala
+            </button>
+        </div>
+    </div>
 </article>
+
+{% with siblings=page.get_siblings.live.public|dictsortreversed:"first_published_at" %}
+{% if siblings %}
+<section class="max-w-3xl mx-auto mt-16 pt-10 border-t-2 border-forest-500">
+    <h2 class="font-display text-xl sm:text-2xl font-bold text-forest-900 mb-8">Diğer Yazılar</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        {% for sibling in siblings|slice:":4" %}
+        {% if sibling.pk != page.pk %}
+        <a href="{% pageurl sibling %}" class="group block">
+            {% if sibling.specific.main_image %}
+            <div class="aspect-[16/10] overflow-hidden rounded-lg bg-gray-100 mb-3">
+                {% image sibling.specific.main_image fill-400x250 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt=sibling.title %}
+            </div>
+            {% else %}
+            <div class="aspect-[16/10] bg-forest-50 rounded-lg flex items-center justify-center mb-3">
+                <span class="text-forest-400 text-2xl font-display">SE</span>
+            </div>
+            {% endif %}
+            <h3 class="font-display text-sm font-bold text-forest-900 leading-snug group-hover:text-forest-600 transition-colors line-clamp-2">{{ sibling.title }}</h3>
+        </a>
+        {% endif %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endwith %}
+
+<div class="max-w-3xl mx-auto mt-10">
+    <a href="/haberler/" class="inline-flex items-center gap-2 text-sm font-semibold text-forest-600 hover:text-forest-700 transition-colors">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/></svg>
+        Tüm haberlere dön
+    </a>
+</div>
+
 {% endcache %}
 {% endblock %}
