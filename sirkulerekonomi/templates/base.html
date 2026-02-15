@@ -1,0 +1,123 @@
+{% load static i18n wagtailcore_tags %}
+<!DOCTYPE html>
+<html lang="{% get_current_language as lang %}{{ lang|default:'tr' }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="description" content="{% block meta_description %}Sirküler Ekonomi – Sürdürülebilirlik ve döngüsel ekonomi haberleri{% endblock %}">
+    <title>{% block title %}Sirküler Ekonomi{% endblock %}</title>
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:title" content="{% block og_title %}Sirküler Ekonomi{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Sirküler Ekonomi – Sürdürülebilirlik ve döngüsel ekonomi haberleri{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
+    {% block og_image_meta %}{% endblock %}
+    <meta property="og:locale" content="tr_TR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}Sirküler Ekonomi{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Sirküler Ekonomi – Sürdürülebilirlik ve döngüsel ekonomi haberleri{% endblock %}">
+    {% block canonical_hreflang %}
+    {% if page %}
+    <link rel="canonical" href="{{ page.full_url }}">
+    {% for language_code, language_name in LANGUAGES %}
+    {% language language_code %}
+    <link rel="alternate" hreflang="{{ language_code }}" href="{% pageurl page.localized %}">
+    {% endlanguage %}
+    {% endfor %}
+    <link rel="alternate" hreflang="x-default" href="{{ page.full_url }}">
+    {% else %}
+    <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
+    {% endif %}
+    {% endblock %}
+    {% block schema_org %}
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Sirküler Ekonomi","url":"{{ request.scheme }}://{{ request.get_host }}/"}</script>
+    {% endblock %}
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        forest: {
+                            950: '#0a1f1a',
+                            900: '#0f2e26',
+                            800: '#143d32',
+                            700: '#1a4d3f',
+                            600: '#20634f',
+                            500: '#2d7a62',
+                            400: '#3d9a7a',
+                            300: '#5bb89a',
+                            200: '#8dd4bd',
+                            100: '#c2ebe0',
+                            50: '#e8f7f3',
+                        },
+                        ink: {
+                            900: '#0f1419',
+                            700: '#2d3640',
+                            500: '#5c6773',
+                            300: '#9ca3af',
+                            100: '#e5e7eb',
+                        }
+                    },
+                    fontFamily: {
+                        display: ['Libre Baskerville', 'Georgia', 'serif'],
+                        body: ['Source Sans 3', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Source Sans 3', system-ui, sans-serif; }
+        .font-display { font-family: 'Libre Baskerville', Georgia, serif; }
+    </style>
+    {% block extra_css %}{% endblock %}
+    {% block extra_meta %}{% endblock %}
+</head>
+<body class="bg-white text-ink-900 antialiased min-h-screen flex flex-col">
+    <header class="bg-forest-900 text-white shadow-md">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <a href="/" class="font-display text-2xl sm:text-3xl font-bold tracking-tight hover:text-forest-200 transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 focus:ring-offset-forest-900 rounded">Sirküler Ekonomi</a>
+                <nav class="flex items-center gap-6" aria-label="Ana menü">
+                    <a href="/" class="text-sm font-medium hover:text-forest-200 transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 focus:ring-offset-forest-900 rounded">Anasayfa</a>
+                    <a href="/haberler/" class="text-sm font-medium hover:text-forest-200 transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 focus:ring-offset-forest-900 rounded">Haberler</a>
+                    <span class="flex items-center gap-2 text-forest-300 text-sm">
+                        {% for language_code, language_name in LANGUAGES %}
+                            {% language language_code %}
+                                {% if page %}
+                                    <a href="{% pageurl page.localized %}" hreflang="{{ language_code }}" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 focus:ring-offset-forest-900 rounded">{{ language_code|upper }}</a>
+                                {% else %}
+                                    <a href="{% if language_code == 'tr' %}/{% else %}/{{ language_code }}/{% endif %}" hreflang="{{ language_code }}" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 focus:ring-offset-forest-900 rounded">{{ language_code|upper }}</a>
+                                {% endif %}
+                            {% endlanguage %}
+                        {% endfor %}
+                    </span>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-forest-900 text-forest-200 mt-auto">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm">
+                <span class="font-display font-semibold text-white">Sirküler Ekonomi</span>
+                <div class="flex flex-wrap items-center justify-center gap-6">
+                    <a href="/sitemap.xml" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 focus:ring-offset-forest-900 rounded">Site Haritası</a>
+                    <a href="/feed/" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 focus:ring-offset-forest-900 rounded">RSS</a>
+                </div>
+            </div>
+            <p class="text-center sm:text-left text-forest-300 text-xs mt-4">© {% now "Y" %} Sirküler Ekonomi. Sürdürülebilirlik ve döngüsel ekonomi haberleri.</p>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

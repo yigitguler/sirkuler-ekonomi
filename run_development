@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMPOSE_FILE="$PROJECT_ROOT/docker-compose.yml"
+
+if docker compose version >/dev/null 2>&1; then
+  COMPOSE_COMMAND=(docker compose -f "$COMPOSE_FILE")
+else
+  COMPOSE_COMMAND=(docker-compose -f "$COMPOSE_FILE")
+fi
+
+run_compose() {
+  "${COMPOSE_COMMAND[@]}" "$@"
+}
+
+show_help() {
+  cat <<'EOF'
+Usage: run_development [options]
+
+Options:
+  --build     Rebuild images before starting services.
+  --down      Stop all containers created via docker compose.
+  -h, --help  Show this help message.
+
+By default this script:
+  1. Starts the nginx reverse proxy.
+  2. Opens an interactive bash shell in the web service container with ports exposed.
+
+Run your own Django commands (e.g. runserver) from the opened shell.
+EOF
+}
+
+if [ "${1:-}" = "-h" ] || [ "${1:-}" = "--help" ]; then
+  show_help
+  exit 0
+fi
+
+if [ "${1:-}" = "--down" ]; then
+  run_compose down --remove-orphans
+  exit 0
+fi
+
+BUILD_IMAGES=0
+if [ "${1:-}" = "--build" ]; then
+  BUILD_IMAGES=1
+  shift
+fi
+
+if [ $BUILD_IMAGES -eq 1 ]; then
+  run_compose build
+fi
+
+run_compose up -d nginx
+
+echo "Containers are up. To start the Django dev server manually, run:"
+echo "  docker compose exec web python manage.py runserver 0.0.0.0:8000"
+echo ""
+echo "Or open a shell in the web container:"
+echo "  docker compose exec web bash"
+echo ""
+exec "${COMPOSE_COMMAND[@]}" exec web bash

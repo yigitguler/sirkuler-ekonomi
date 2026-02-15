@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load wagtailcore_tags wagtailimages_tags cache %}
+
+{% block title %}Haberler – Sirküler Ekonomi{% endblock %}
+{% block meta_description %}Sürdürülebilirlik ve döngüsel ekonomi haberleri, analizler ve güncel gelişmeler.{% endblock %}
+
+{% block content %}
+<header class="mb-12">
+    <h1 class="font-display text-3xl sm:text-4xl font-bold text-forest-900">{{ page.title }}</h1>
+    <p class="text-ink-600 mt-2">Sürdürülebilirlik ve döngüsel ekonomi haberleri</p>
+</header>
+
+{% cache 300 article_index page.id %}
+<div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+    {% for article in articles %}
+    <a href="{% pageurl article %}" class="group block bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200 hover:shadow-md hover:border-forest-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 rounded-xl">
+        {% if article.main_image %}
+        <div class="aspect-[16/10] overflow-hidden bg-gray-100">
+            {% image article.main_image fill-600x375 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt=article.title %}
+        </div>
+        {% else %}
+        <div class="aspect-[16/10] bg-gray-200 flex items-center justify-center">
+            <span class="text-forest-600 text-4xl font-display">SE</span>
+        </div>
+        {% endif %}
+        <div class="p-5">
+            <time class="text-xs text-ink-500 font-medium uppercase tracking-wider" datetime="{{ article.first_published_at|date:'c' }}">{{ article.first_published_at|date:"d F Y" }}</time>
+            <h2 class="font-display text-lg font-bold text-forest-900 mt-2 line-clamp-2 group-hover:text-forest-600 transition-colors">{{ article.title }}</h2>
+            {% if article.intro %}
+            <p class="text-ink-600 text-sm mt-2 line-clamp-2">{{ article.intro }}</p>
+            {% endif %}
+        </div>
+    </a>
+    {% empty %}
+    <p class="text-ink-500 col-span-full">Henüz yayınlanmış yazı yok.</p>
+    {% endfor %}
+</div>
+{% endcache %}
+{% endblock %}

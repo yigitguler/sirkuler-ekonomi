@@ -1,0 +1,32 @@
+services:
+  web:
+    build: .
+    working_dir: /app/sirkulerekonomi
+    # No automatic runserver: container runs migrations then sleeps; start server manually via exec
+    entrypoint: ["bash", "-c"]
+    command: ["python manage.py migrate --noinput 2>/dev/null || true && exec sleep infinity"]
+    volumes:
+      - .:/app
+      - static_volume:/app/sirkulerekonomi/staticfiles
+      - media_volume:/app/sirkulerekonomi/media
+    env_file:
+      - sirkulerekonomi/.env.example
+    environment:
+      PYTHONPATH: /app/sirkulerekonomi
+      DJANGO_SETTINGS_MODULE: sirkulerekonomi.settings
+      DEV_SERVER: "1"
+      SITE_BASE_URL: http://localhost:8000
+
+  nginx:
+    image: nginx:1.25-alpine
+    ports:
+      - "127.0.0.1:8000:80"
+    volumes:
+      - ./conf/nginx_development.conf:/etc/nginx/conf.d/default.conf:ro
+      - media_volume:/usr/share/nginx/html/media
+    depends_on:
+      - web
+
+volumes:
+  static_volume:
+  media_volume:
