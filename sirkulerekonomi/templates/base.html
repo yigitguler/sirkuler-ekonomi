@@ -1,10 +1,11 @@
 {% load static i18n wagtailcore_tags %}
 <!DOCTYPE html>
-<html lang="{% get_current_language as lang %}{{ lang|default:'tr' }}">
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#ffffff">
+    <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
     <meta name="description" content="{% block meta_description %}Sirküler Ekonomi – Sürdürülebilirlik ve döngüsel ekonomi haberleri{% endblock %}">
     <title>{% block title %}Sirküler Ekonomi{% endblock %}</title>
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
@@ -19,12 +20,6 @@
     {% block canonical_hreflang %}
     {% if page %}
     <link rel="canonical" href="{{ page.full_url }}">
-    {% for language_code, language_name in LANGUAGES %}
-    {% language language_code %}
-    <link rel="alternate" hreflang="{{ language_code }}" href="{% pageurl page.localized %}">
-    {% endlanguage %}
-    {% endfor %}
-    <link rel="alternate" hreflang="x-default" href="{{ page.full_url }}">
     {% else %}
     <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
     {% endif %}
@@ -95,22 +90,11 @@
     <div class="bg-forest-950 text-forest-300 text-xs">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-1.5 flex items-center justify-between">
             <span class="hidden sm:inline">Sürdürülebilirlik ve döngüsel ekonomi haberleri</span>
-            <div class="flex items-center gap-4 ml-auto">
+            <div class="ml-auto">
                 <a href="/feed/" class="hover:text-white transition-colors flex items-center gap-1" aria-label="RSS">
                     <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z"/></svg>
                     RSS
                 </a>
-                <span class="flex items-center gap-1.5">
-                    {% for language_code, language_name in LANGUAGES %}
-                        {% language language_code %}
-                            {% if page %}
-                                <a href="{% pageurl page.localized %}" hreflang="{{ language_code }}" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 focus:ring-offset-forest-950 rounded">{{ language_code|upper }}</a>
-                            {% else %}
-                                <a href="{% if language_code == 'tr' %}/{% else %}/{{ language_code }}/{% endif %}" hreflang="{{ language_code }}" class="hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 focus:ring-offset-forest-950 rounded">{{ language_code|upper }}</a>
-                            {% endif %}
-                        {% endlanguage %}
-                    {% endfor %}
-                </span>
             </div>
         </div>
     </div>
@@ -118,7 +102,10 @@
     <header class="bg-forest-900 text-white shadow-md">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
             <div class="flex items-center justify-between">
-                <a href="/" class="font-display text-2xl sm:text-3xl font-bold tracking-tight hover:text-forest-200 transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 focus:ring-offset-forest-900 rounded">Sirküler Ekonomi</a>
+                <a href="/" class="flex items-center gap-0 hover:text-forest-200 transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 focus:ring-offset-forest-900 rounded">
+                    <img src="{% static 'images/logo.png' %}" alt="" class="h-10 sm:h-12 w-auto mix-blend-lighten" width="120" height="48">
+                    <span class="font-display text-2xl sm:text-3xl font-bold tracking-tight">Sirküler Ekonomi</span>
+                </a>
 
                 <nav class="hidden md:flex items-center gap-8" aria-label="Ana menü">
                     <a href="/" class="text-sm font-semibold tracking-wide uppercase hover:text-forest-200 transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 focus:ring-offset-forest-900 rounded">Anasayfa</a>
@@ -147,7 +134,10 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12">
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 <div class="sm:col-span-2 lg:col-span-1">
-                    <span class="font-display text-xl font-bold text-white">Sirküler Ekonomi</span>
+                    <div class="flex items-center gap-0">
+                        <img src="{% static 'images/logo.png' %}" alt="" class="h-10 w-auto mix-blend-lighten" width="120" height="48">
+                        <span class="font-display text-xl font-bold text-white">Sirküler Ekonomi</span>
+                    </div>
                     <p class="text-sm text-forest-300 mt-3 leading-relaxed">Sürdürülebilirlik ve döngüsel ekonomi alanındaki gelişmeleri takip eden bağımsız haber platformu.</p>
                 </div>
                 <div>

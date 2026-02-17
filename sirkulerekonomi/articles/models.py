@@ -24,6 +24,7 @@ class ArticleIndexPage(Page):
 
 class ArticlePage(Page):
     intro = models.CharField(max_length=500, blank=True, verbose_name='Özet')
+    meta_keywords = models.CharField(max_length=255, blank=True, verbose_name='Meta keywords')
     main_image = models.ForeignKey(
         'wagtailimages.Image',
         null=True,
@@ -50,6 +51,10 @@ class ArticlePage(Page):
         FieldPanel('body'),
     ]
 
+    promote_panels = Page.promote_panels + [
+        FieldPanel('meta_keywords'),
+    ]
+
     parent_page_types = ['articles.ArticleIndexPage']
 
     class Meta:
@@ -58,11 +63,14 @@ class ArticlePage(Page):
 
     def get_context(self, request, *args, **kwargs):
         context = super().get_context(request, *args, **kwargs)
+        base = request.scheme + '://' + request.get_host() if request else ''
+        description = (self.search_description or self.intro or '')[:500]
         schema = {
             '@context': 'https://schema.org',
             '@type': 'NewsArticle',
+            'mainEntityOfPage': {'@type': 'WebPage', '@id': self.full_url},
             'headline': self.title,
-            'description': (self.intro or '')[:500],
+            'description': description,
             'datePublished': self.first_published_at.isoformat() if self.first_published_at else None,
             'dateModified': self.last_published_at.isoformat() if getattr(self, 'last_published_at', None) else None,
             'url': self.full_url,
@@ -70,11 +78,17 @@ class ArticlePage(Page):
                 '@type': 'Organization',
                 'name': 'Sirküler Ekonomi',
             },
+            'author': {'@type': 'Organization', 'name': 'Sirküler Ekonomi'},
         }
         if self.main_image:
-            rend = self.main_image.get_rendition('width-1200')
-            base = request.scheme + '://' + request.get_host()
-            schema['image'] = base + rend.url if rend.url.startswith('/') else rend.url
+            rend_1200 = self.main_image.get_rendition('width-1200')
+            rend_900 = self.main_image.get_rendition('width-900')
+            img_url = base + rend_1200.url if rend_1200.url.startswith('/') else rend_1200.url
+            schema['image'] = [img_url]
+            preload_url = rend_900.url
+            context['main_image_preload_url'] = base + preload_url if preload_url.startswith('/') else preload_url
+        else:
+            context['main_image_preload_url'] = None
         schema = {k: v for k, v in schema.items() if v is not None}
         json_str = json.dumps(schema, ensure_ascii=False)
         context['article_schema_json'] = json_str.replace('</', r'<\/')

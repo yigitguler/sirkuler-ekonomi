@@ -1,0 +1,16 @@
+---
+description: SEO is critical; preserve and extend meta, schema, and performance.
+alwaysApply: true
+---
+
+# SEO is critical in this project
+
+When changing pages, templates, or content:
+
+- **Meta and Open Graph**: Every page type must expose a unique `<title>`, meta description, and canonical URL. Article-like pages must set og:type, og:title, og:description, og:image (with og:image:width, og:image:height, og:image:alt where applicable).
+- **Structured data**: Article/news pages must output valid JSON-LD (e.g. NewsArticle) with headline, description, datePublished, dateModified, url, publisher, image (array), and mainEntityOfPage. Use `search_description` for schema description when set.
+- **Images**: Always set `width`, `height`, and `alt`. For the main above-the-fold (LCP) image use `fetchpriority="high"` and `loading="eager"`; provide a preload link in `<head>` when that image is critical. Prefer explicit dimensions to avoid layout shift (CLS).
+- **Robots**: Default is `index, follow` via meta robots; override only when a page must be noindex.
+- **New page types**: Add promote_panels (or equivalent) for SEO title and meta description; ensure sitemap and canonical are correct.
+
+See `docs/SEO.md` for the full checklist.

@@ -1,24 +1,33 @@
 {% extends "base.html" %}
 {% load wagtailcore_tags wagtailimages_tags cache %}
 
-{% block title %}{{ page.title }} – Sirküler Ekonomi{% endblock %}
-{% block meta_description %}{{ page.intro|striptags|truncatewords:30 }}{% endblock %}
+{% block title %}{{ page.seo_title|default:page.title }} – Sirküler Ekonomi{% endblock %}
+{% block meta_description %}{{ page.search_description|default:page.intro|striptags|truncatewords:30 }}{% endblock %}
 {% block og_type %}article{% endblock %}
-{% block og_title %}{{ page.title }}{% endblock %}
-{% block og_description %}{{ page.intro|striptags|truncatewords:30 }}{% endblock %}
+{% block og_title %}{{ page.seo_title|default:page.title }}{% endblock %}
+{% block og_description %}{{ page.search_description|default:page.intro|striptags|truncatewords:30 }}{% endblock %}
 
 {% block og_image_meta %}
 {% if page.main_image %}
 {% image page.main_image width-1200 as og_img %}
 <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ og_img.url }}">
+<meta property="og:image:width" content="{{ og_img.width }}">
+<meta property="og:image:height" content="{{ og_img.height }}">
+<meta property="og:image:alt" content="{{ page.seo_title|default:page.title }}">
 {% else %}
 {{ block.super }}
 {% endif %}
 {% endblock %}
+{% block twitter_title %}{{ page.seo_title|default:page.title }}{% endblock %}
+{% block twitter_description %}{{ page.search_description|default:page.intro|striptags|truncatewords:30 }}{% endblock %}
 
 {% block extra_meta %}
+{% if page.meta_keywords %}<meta name="keywords" content="{{ page.meta_keywords }}">{% endif %}
 <meta property="article:published_time" content="{{ page.first_published_at|date:'c' }}">
 {% if page.last_published_at %}<meta property="article:modified_time" content="{{ page.last_published_at|date:'c' }}">{% endif %}
+{% if main_image_preload_url %}
+<link rel="preload" as="image" href="{{ main_image_preload_url }}" fetchpriority="high">
+{% endif %}
 {% if article_schema_json %}
 <script type="application/ld+json">{{ article_schema_json|safe }}</script>
 {% endif %}
@@ -50,7 +59,8 @@
         </div>
         {% if page.main_image %}
         <figure class="mt-8 -mx-4 sm:mx-0 sm:rounded-xl overflow-hidden">
-            {% image page.main_image width-900 class="w-full h-auto" alt=page.title %}
+            {% image page.main_image width-900 as hero_img %}
+            <img src="{{ hero_img.url }}" alt="{{ page.seo_title|default:page.title }}" width="{{ hero_img.width }}" height="{{ hero_img.height }}" decoding="async" fetchpriority="high" class="w-full h-auto" loading="eager">
         </figure>
         {% endif %}
     </header>
