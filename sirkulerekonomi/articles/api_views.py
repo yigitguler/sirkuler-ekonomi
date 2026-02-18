@@ -20,6 +20,13 @@ def _strip_html(html):
     return re.sub(r'<[^>]+>', '', html).strip()
 
 
+def _markdown_to_html(md):
+    if not (md or '').strip():
+        return ''
+    import markdown
+    return markdown.markdown(md.strip(), extensions=['extra', 'nl2br'])
+
+
 def _parse_body_to_stream_blocks(html):
     """Parse HTML into Wagtail StreamField blocks: heading, paragraph, blockquote."""
     if not (html or '').strip():
@@ -205,7 +212,8 @@ def post_article(request):
         return JsonResponse({'error': 'meta_description is required'}, status=400)
 
     intro = (data.get('intro') or '')[:500]
-    body_html = data.get('body') or ''
+    body_raw = data.get('body') or ''
+    body_html = _markdown_to_html(body_raw)
     meta_keywords = (data.get('meta_keywords') or '')[:255]
     cover_image_url = (data.get('cover_image_url') or '').strip()
     cover_image_base64 = data.get('cover_image_base64')
