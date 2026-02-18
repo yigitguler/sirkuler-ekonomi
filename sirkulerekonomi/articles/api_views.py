@@ -1,3 +1,5 @@
+import base64
+import io
 import json
 import re
 import urllib.error
@@ -12,6 +14,61 @@ from wagtail.models import Locale
 from wagtail.rich_text import RichText
 
 from .models import ArticleIndexPage, ArticlePage
+
+
+def _strip_html(html):
+    return re.sub(r'<[^>]+>', '', html).strip()
+
+
+def _parse_body_to_stream_blocks(html):
+    """Parse HTML into Wagtail StreamField blocks: heading, paragraph, blockquote."""
+    if not (html or '').strip():
+        return []
+    html = html.strip()
+    blocks = []
+    block_tags = ('p', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote')
+    i = 0
+    while i < len(html):
+        m = re.search(r'<([a-z][a-z0-9]*)(?:\s[^>]*)?>', html[i:], re.I)
+        if not m:
+            break
+        tag = m.group(1).lower()
+        if tag not in block_tags:
+            i += m.end()
+            continue
+        start = i + m.end()
+        close = '</' + tag + '>'
+        depth = 1
+        j = start
+        end_pos = -1
+        while j < len(html):
+            next_close = html.find(close, j)
+            if next_close == -1:
+                break
+            next_open = html.find('<' + tag, j)
+            if next_open != -1 and next_open < next_close:
+                depth += 1
+                j = next_open + 1
+            else:
+                depth -= 1
+                if depth == 0:
+                    end_pos = next_close
+                    break
+                j = next_close + len(close)
+        if end_pos == -1:
+            i = start
+            continue
+        inner = html[start:end_pos]
+        i = end_pos + len(close)
+        if tag == 'p':
+            blocks.append(('paragraph', RichText('<p>' + inner + '</p>')))
+        elif tag in ('h2', 'h3', 'h4', 'h5', 'h6'):
+            blocks.append(('heading', _strip_html(inner)))
+        elif tag == 'blockquote':
+            blocks.append(('blockquote', _strip_html(inner)))
+    if not blocks and html:
+        blocks.append(('paragraph', RichText(html)))
+    return blocks
 
 
 def _get_api_secret():
@@ -45,6 +102,15 @@ def _fetch_image_from_url(url):
     return content, ext
 
 
+def _get_image_dimensions(content):
+    try:
+        from PIL import Image as PILImage
+        pil = PILImage.open(io.BytesIO(content))
+        return pil.width, pil.height
+    except Exception:
+        return 1, 1
+
+
 def _create_cover_image_from_url(url, title):
     content, ext = _fetch_image_from_url(url)
     if content is None:
@@ -52,7 +118,66 @@ def _create_cover_image_from_url(url, title):
     Image = get_image_model()
     name = re.sub(r'[^\w\-]', '-', (title or 'cover')[:50]) + '.' + ext
     image = Image(title=name)
-    image.file.save(name, ContentFile(content), save=True)
+    image.file.save(name, ContentFile(content), save=False)
+    w, h = _get_image_dimensions(content)
+    image.width = w
+    image.height = h
+    image.save()
+    return image
+
+
+def _ext_from_data_url(data_url):
+    m = re.match(r'data:image/(\w+);base64,', data_url, re.I)
+    if m:
+        ct = m.group(1).lower()
+        if ct == 'jpeg':
+            return 'jpg'
+        if ct in ('png', 'gif', 'webp'):
+            return ct
+        return 'jpg'
+    return None
+
+
+def _ext_from_magic(content):
+    if content[:8] == b'\x89PNG\r\n\x1a\n':
+        return 'png'
+    if content[:2] == b'\xff\xd8':
+        return 'jpg'
+    if content[:6] in (b'GIF87a', b'GIF89a'):
+        return 'gif'
+    if content[:4] == b'RIFF' and content[8:12] == b'WEBP':
+        return 'webp'
+    return 'jpg'
+
+
+def _create_cover_image_from_base64(b64_data, title):
+    data = (b64_data or '').strip()
+    if not data:
+        return None
+    ext = None
+    if data.startswith('data:'):
+        ext = _ext_from_data_url(data)
+        if not ext:
+            return None
+        payload = data.split(',', 1)[1]
+    else:
+        payload = data
+    try:
+        content = base64.b64decode(payload)
+    except Exception:
+        return None
+    if not content or len(content) < 12:
+        return None
+    if ext is None:
+        ext = _ext_from_magic(content)
+    Image = get_image_model()
+    name = re.sub(r'[^\w\-]', '-', (title or 'cover')[:50]) + '.' + ext
+    image = Image(title=name)
+    image.file.save(name, ContentFile(content), save=False)
+    w, h = _get_image_dimensions(content)
+    image.width = w
+    image.height = h
+    image.save()
     return image
 
 
@@ -83,6 +208,7 @@ def post_article(request):
     body_html = data.get('body') or ''
     meta_keywords = (data.get('meta_keywords') or '')[:255]
     cover_image_url = (data.get('cover_image_url') or '').strip()
+    cover_image_base64 = data.get('cover_image_base64')
     publish_immediately = data.get('publish_immediately', True)
     if isinstance(publish_immediately, str):
         publish_immediately = publish_immediately.strip().lower() in ('true', '1', 'yes')
@@ -96,7 +222,11 @@ def post_article(request):
         return JsonResponse({'error': 'No locale configured'}, status=500)
 
     main_image = None
-    if cover_image_url:
+    if cover_image_base64:
+        main_image = _create_cover_image_from_base64(cover_image_base64, title)
+        if main_image is None:
+            return JsonResponse({'error': 'cover_image_base64 is invalid or not a supported image'}, status=400)
+    elif cover_image_url:
         try:
             main_image = _create_cover_image_from_url(cover_image_url, title)
         except (OSError, ValueError, urllib.error.URLError) as e:
@@ -104,10 +234,7 @@ def post_article(request):
         if main_image is None:
             return JsonResponse({'error': 'cover_image_url did not return a valid image'}, status=400)
 
-    if body_html:
-        body_blocks = [('paragraph', RichText(body_html))]
-    else:
-        body_blocks = []
+    body_blocks = _parse_body_to_stream_blocks(body_html)
 
     article = ArticlePage(
         title=title,

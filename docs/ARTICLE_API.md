@@ -27,9 +27,10 @@ Send the secret in one of these headers:
 | meta_title        | Yes      | SEO title for &lt;title&gt;, og:title, twitter:title (max 70 chars)        |
 | meta_description  | Yes      | Meta description and og:description (max 500 chars)                         |
 | intro             | No       | Short summary (max 500 chars)                                               |
-| body              | No       | Article body as HTML                                                       |
+| body              | No       | Article body as HTML. Parsed into Wagtail StreamField blocks: `<p>` → paragraph, `<h2>`–`<h6>` → heading, `<blockquote>` → blockquote. Other content is wrapped in a single paragraph. |
 | meta_keywords     | No       | Meta keywords tag (max 255 chars)                                          |
 | cover_image_url   | No       | Public URL of the cover image; we download it and use as og:image         |
+| cover_image_base64 | No      | Cover image as base64 (raw string or data URL like `data:image/png;base64,...`). Supported: JPEG, PNG, GIF, WebP. If both URL and base64 are sent, base64 is used. |
 | publish_immediately | No     | If `true`, the article is published right away. If `false` or omitted, it is saved as a draft (default: `true`). |
 
 ## Example (curl)
@@ -41,19 +42,20 @@ curl -X POST https://sirkulerekonomi.com/api/articles/ \
   -H "Content-Type: application/json" \
   -H "X-API-Key: YOUR_SECRET" \
   -d '{
-    "title": "My news title",
-    "intro": "A short summary.",
-    "meta_title": "Custom SEO title for search and social",
-    "meta_description": "One sentence for search results and social previews.",
-    "meta_keywords": "keyword1, keyword2, keyword3",
+    "title": "Döngüsel Ekonomi ve Sürdürülebilir Üretim",
+    "intro": "Avrupa Birliği yeşil mutabakatı ve yerel uygulamalar.",
+    "meta_title": "Döngüsel Ekonomi 2025 – Sürdürülebilir Üretim",
+    "meta_description": "Döngüsel ekonomi, yeşil mutabakat ve sürdürülebilir üretim uygulamaları hakkında güncel analiz.",
+    "meta_keywords": "döngüsel ekonomi, sürdürülebilirlik, yeşil mutabakat",
     "cover_image_url": "https://example.com/image.jpg",
-    "body": "<p>First paragraph.</p><p>Second paragraph.</p>"
+    "publish_immediately": true,
+    "body": "<p>Sürdürülebilir büyüme ve kaynak verimliliği, günümüz sanayi politikalarının merkezinde yer alıyor. Bu yazıda <strong>döngüsel ekonomi</strong> modelleri ve uygulama örneklerini inceliyoruz.</p><h2>Yeşil Mutabakat ve Hedefler</h2><p>Avrupa Birliği Yeşil Mutabakatı, 2050 karbon nötr hedefine yönelik yatırım ve düzenlemeleri içeriyor. Üye ülkeler ve ticaret ortakları için <em>dönüşüm</em> fırsatları ve yükümlülükler getiriyor.</p><p>Yerel üreticilerin uyum süreçleri, finansman araçları ve teknik destek programlarıyla desteklenmesi gerekiyor. Özellikle KOBİ’lerin döngüsel ekonomi prensiplerine geçişi için net yol haritaları önem taşıyor.</p><h3>Atık Azaltımı ve Geri Kazanım</h3><p>Atık yönetimi ve geri dönüşüm altyapısı, döngüsel ekonominin temel taşlarından biri. Kaynak verimliliği artırılırken atık miktarının azaltılması hedefleniyor.</p><blockquote>Döngüsel ekonomi, ürünlerin ve malzemelerin mümkün olduğunca uzun süre ekonomide kalmasını ve atığın en aza indirilmesini amaçlar.</blockquote><p>Sonuç olarak, hem çevresel hem de ekonomik fayda sağlayan bir üretim modeli giderek daha fazla benimseniyor. Önümüzdeki dönemde politika ve sektör uyumunun hızlanması bekleniyor.</p>"
   }'
 ```
 
 ## Responses
 
 - **201 Created** – Article was created. Response body includes `id`, `url`, `slug`, and `published` (whether it went live immediately).
-- **400 Bad Request** – Invalid JSON, missing mandatory field (`title`, `meta_title`, or `meta_description`), or invalid `cover_image_url` (e.g. URL not an image). Response includes an `error` message.
+- **400 Bad Request** – Invalid JSON, missing mandatory field (`title`, `meta_title`, or `meta_description`), or invalid cover image (`cover_image_url` not an image, or `cover_image_base64` invalid/unsupported). Response includes an `error` message.
 - **401 Unauthorized** – Missing or wrong secret in the header.
 - **404 Not Found** – Our Haberler section is not available (contact us).

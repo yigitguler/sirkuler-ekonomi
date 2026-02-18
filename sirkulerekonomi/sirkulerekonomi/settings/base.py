@@ -110,6 +110,10 @@ SECRET_KEY = 'change-me-in-production'
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10_000
 
+# Max upload size 100 MB (must be >= nginx client_max_body_size)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024
+DATA_UPLOAD_MAX_MEMORY_SIZE = 100 * 1024 * 1024
+
 WAGTAIL_SITE_NAME = 'Sirküler Ekonomi'
 WAGTAILADMIN_BASE_URL = 'https://sirkulerekonomi.com'
 
@@ -117,7 +121,7 @@ WAGTAILDOCS_EXTENSIONS = ['csv', 'docx', 'key', 'odt', 'pdf', 'pptx', 'rtf', 'tx
 
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-ARTICLE_API_SECRET = os.environ.get('ARTICLE_API_SECRET', '')
+ARTICLE_API_SECRET = "sinanaydayavrumhopasinanaysinanaydasinanayhopasinanay*-4"
 
 CACHES = {
     'default': {
