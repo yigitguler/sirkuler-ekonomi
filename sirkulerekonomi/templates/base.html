@@ -6,26 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#ffffff">
     <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
-    <meta name="description" content="{% block meta_description %}Sirküler Ekonomi – Sürdürülebilirlik ve döngüsel ekonomi haberleri{% endblock %}">
+    <meta name="description" content="{% block meta_description %}Sirküler Ekonomi: Türkiye'nin sürdürülebilirlik ve döngüsel ekonomi haber platformu. Geri dönüşüm, yeşil teknoloji ve atık yönetimi güncellemeleri.{% endblock %}">
+    {% block meta_keywords %}{% endblock %}
     <title>{% block title %}Sirküler Ekonomi{% endblock %}</title>
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
     <meta property="og:title" content="{% block og_title %}Sirküler Ekonomi{% endblock %}">
-    <meta property="og:description" content="{% block og_description %}Sirküler Ekonomi – Sürdürülebilirlik ve döngüsel ekonomi haberleri{% endblock %}">
-    <meta property="og:url" content="{% block og_url %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Sirküler Ekonomi: Türkiye'nin sürdürülebilirlik ve döngüsel ekonomi haber platformu. Geri dönüşüm, yeşil teknoloji ve atık yönetimi güncellemeleri.{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{% if site_base_url %}{{ site_base_url }}{% if page %}{{ page.url }}{% else %}{{ request.path }}{% endif %}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endif %}{% endblock %}">
     {% block og_image_meta %}{% endblock %}
     <meta property="og:locale" content="tr_TR">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{% block twitter_title %}Sirküler Ekonomi{% endblock %}">
-    <meta name="twitter:description" content="{% block twitter_description %}Sirküler Ekonomi – Sürdürülebilirlik ve döngüsel ekonomi haberleri{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Sirküler Ekonomi: Türkiye'nin sürdürülebilirlik ve döngüsel ekonomi haber platformu. Geri dönüşüm, yeşil teknoloji ve atık yönetimi güncellemeleri.{% endblock %}">
     {% block canonical_hreflang %}
+    {% if site_base_url %}
+    <link rel="canonical" href="{{ site_base_url }}{% if page %}{{ page.url }}{% else %}{{ request.path }}{% endif %}">
+    {% else %}
     {% if page %}
     <link rel="canonical" href="{{ page.full_url }}">
     {% else %}
     <link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{{ request.path }}">
     {% endif %}
+    {% endif %}
     {% endblock %}
     {% block schema_org %}
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Sirküler Ekonomi","url":"{{ request.scheme }}://{{ request.get_host }}/"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"Sirküler Ekonomi","url":"{% if site_base_url %}{{ site_base_url }}/{% else %}{{ request.scheme }}://{{ request.get_host }}/{% endif %}"}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"NewsMediaOrganization","name":"Sirküler Ekonomi","url":"{% if site_base_url %}{{ site_base_url }}/{% else %}{{ request.scheme }}://{{ request.get_host }}/{% endif %}","logo":"{% if site_base_url %}{{ site_base_url }}{% static 'images/logo.png' %}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}{% endif %}","description":"Sürdürülebilirlik ve döngüsel ekonomi alanındaki gelişmeleri takip eden bağımsız haber platformu.","inLanguage":"tr","foundingDate":"2025"}</script>
+    {% block schema_org_extra %}{% endblock %}
     {% endblock %}
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -70,6 +77,7 @@
         .font-display { font-family: 'Libre Baskerville', Georgia, serif; }
         html { scroll-behavior: smooth; }
         ::selection { background-color: #c2ebe0; color: #0a1f1a; }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border-width: 0; }
         .article-body > div:first-child p:first-of-type::first-letter {
             float: left;
             font-family: 'Libre Baskerville', Georgia, serif;

@@ -2,8 +2,17 @@
 {% load wagtailcore_tags wagtailimages_tags cache %}
 
 {% block title %}Sirküler Ekonomi – Sürdürülebilirlik ve döngüsel ekonomi haberleri{% endblock %}
+{% block meta_description %}Sirküler Ekonomi: Türkiye'nin sürdürülebilirlik ve döngüsel ekonomi haber platformu. Geri dönüşüm, yeşil teknoloji ve atık yönetimi güncellemeleri.{% endblock %}
+{% block meta_keywords %}<meta name="keywords" content="sirküler ekonomi, döngüsel ekonomi, sürdürülebilirlik, geri dönüşüm, yeşil ekonomi, atık yönetimi, sıfır atık, circular economy, Türkiye, çevre, iklim değişikliği">{% endblock %}
+
+{% block schema_org_extra %}
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Sirküler ekonomi nedir?","acceptedAnswer":{"@type":"Answer","text":"Sirküler ekonomi (circular economy), 'al-üret-at' modeline son vererek kaynakların sürekli döngüde kaldığı bir ekonomik sistemdir. Geleneksel lineer ekonominin aksine, sirküler ekonomide ürünler, malzemeler ve kaynaklar mümkün olan en uzun süre kullanılır, ardından geri dönüştürülür ve yeniden kullanılır. Avrupa Birliği'nin 2020 verilerine göre, sirküler ekonomiye geçiş, 2030 yılına kadar AB'de 600 bin yeni iş yaratabilir ve 600 milyar avro ilave ekonomik fayda sağlayabilir."}},{"@type":"Question","name":"Sirküler ekonominin 7 prensibi nedir?","acceptedAnswer":{"@type":"Answer","text":"Sirküler ekonominin temel prensipleri şunlardır: 1) Teknik ve biyolojik besin döngülerini ayırmak, 2) Atık olarak tasarım yapmamak, 3) Üretkenliği yeniden yapılandırmak, 4) Yenilenebilir enerji kullanmak, 5) Sistem düşünceini benimsemek, 6) Malzemeleri kullanmak yerine işlevi kullanmak, 7) Doğayı iyileştirmek."}},{"@type":"Question","name":"Türkiye'de sirküler ekonomi çalışmaları nelerdir?","acceptedAnswer":{"@type":"Answer","text":"Türkiye'de sirküler ekonomi dönüşümü Çevre ve Şehircilik Bakanlığı tarafından yürütülen Sıfır Atık Projesi (2017) ile başlamıştır. 2021 yılında Türkiye'nin ilk 'Sirküler Ekonomi Eylem Planı' yayınlanmış ve 2024-2028 dönemi için 'İkinci Sirküler Ekonomi Eylem Planı' hazırlanmıştır. Türkiye ayrıca Avrupa Yeşil Mutabakatı uyum çalışmaları kapsamında sirküler ekonomi geçişini hızlandırmaktadır."}},{"@type":"Question","name":"Geri dönüşüm ve sirküler ekonomi arasındaki fark nedir?","acceptedAnswer":{"@type":"Answer","text":"Geri dönüşüm, sirküler ekonominin sadece bir parçasıdır. Sirküler ekonomi, geri dönüştürmenin ötesinde; ürün ömrü uzatma, onarım, yeniden kullanım, paylaşım ekonomisi ve atık önleme stratejilerini de içerir. Geri dönüşüm lineer ekonominin sonunda yapılan bir işlem iken, sirküler ekonomi ürünün tasarım aşamasından başlayan bütüncül bir yaklaşımdır."}},{"@type":"Question","name":"Sirküler ekonomi neden önemlidir?","acceptedAnswer":{"@type":"Answer","text":"Sirküler ekonomi üç temel alanda fayda sağlar: Çevresel - atık azaltımı, karbon emisyonu düşüşü, kaynak verimliliği; Ekonomik - maliyet tasarrufu, yeni iş alanları, innovasyon teşviki; Sosyal - toplumsal farkındalık, istihdam artışı, yerel ekonomi güçlenmesi. BM Kalkınma Programı (UNDP) verilerine göre, sirküler ekonomi uygulamaları küresel karbon emisyonlarını %39 oranında azaltma potansiyeline sahiptir."}}]}
+</script>
+{% endblock %}
 
 {% block content %}
+<h1 class="sr-only">Sirküler Ekonomi - Türkiye'nin Sürdürülebilirlik ve Döngüsel Ekonomi Haber Platformu</h1>
 {% cache 300 home_articles page.id %}
 
 {% for article in articles %}

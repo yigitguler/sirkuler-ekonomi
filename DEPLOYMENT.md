@@ -55,3 +55,23 @@ Restore by placing `db.sqlite3` back into the volume or the data directory befor
 - View logs: `docker compose -f docker-compose.production.yaml logs -f web`
 - Restart web: `docker compose -f docker-compose.production.yaml restart web`
 - Shell into web container: `docker compose -f docker-compose.production.yaml exec web bash`
+
+### Cloudflare 521 (Web server is down)
+
+521 means Cloudflare cannot reach your **origin** server (the machine where Docker runs). Fix on the server/hosting side:
+
+1. **Containers running**  
+   On the server: `docker compose -f docker-compose.production.yaml ps`  
+   Both `web` and `nginx` should be Up. If not: `docker compose -f docker-compose.production.yaml up -d`.
+
+2. **Port 80 open**  
+   Your nginx binds to port 80. Ensure the host firewall (e.g. `ufw`) and any cloud security group allow **inbound TCP 80** (and 443 if you add TLS on origin). Cloudflare connects to your origin’s public IP on port 80 (or 443 if SSL mode is Full).
+
+3. **Cloudflare SSL/TLS mode**  
+   Your origin nginx listens on **HTTP only** (port 80). In Cloudflare: **SSL/TLS** → **Overview** → set encryption mode to **Flexible** (Cloudflare HTTPS → origin HTTP). If you set Full or Full (strict), Cloudflare will try HTTPS to your origin and get a connection error (521) because the origin has no TLS.
+
+4. **Origin server reachable**  
+   From another machine: `curl -v http://YOUR_ORIGIN_IP` (use the server’s real IP, not the Cloudflare proxy IP). If this fails, the server or firewall is blocking access.
+
+5. **DNS in Cloudflare**  
+   For the A record of `sirkulerekonomi.com` (and `www` if used), the IP must be your **origin server’s IP**. Proxy status (orange cloud) is fine; the IP must point to the host running Docker.
