@@ -6,7 +6,6 @@ def robots_txt(request):
     base = getattr(settings, 'SITE_BASE_URL', 'https://sirkulerekonomi.com').rstrip('/')
     sitemap_url = base + '/sitemap.xml'
     content = f'''# robots.txt - sirkulerekonomi.com
-# We welcome all crawlers including AI bots. Content is open for indexing and training.
 
 User-agent: *
 Allow: /
@@ -69,7 +68,6 @@ Allow: /
 User-agent: Cohere-AI
 Allow: /
 
-# Sitemap (helps all bots discover URLs)
 Sitemap: {sitemap_url}
 '''
     return HttpResponse(content, content_type='text/plain; charset=utf-8')
