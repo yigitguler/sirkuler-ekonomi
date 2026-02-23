@@ -1,6 +1,9 @@
 # SQLite database – local/dev state; never commit (catastrophic if deployed/tracked)
 sirkulerekonomi/data/db.sqlite3
 **/db.sqlite3
+# SQLite backups (from backup_sqlite management command)
+sirkulerekonomi/data/backups/
+**/data/backups/
 
 # Python
 __pycache__/

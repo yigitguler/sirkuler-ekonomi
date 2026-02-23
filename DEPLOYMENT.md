@@ -34,7 +34,32 @@ This will:
 
 ## Backup
 
-Back up the SQLite database for disaster recovery:
+### Regular automated backups
+
+Use the `backup_sqlite` management command for consistent, app-safe backups (uses SQLite’s backup API). Backups are written to `data/backups/` inside the container (on the `sqlite_data` volume).
+
+Run manually:
+
+```bash
+# Inside container (e.g. from host)
+docker compose -f docker-compose.production.yaml exec web python sirkulerekonomi/manage.py backup_sqlite --keep 7
+```
+
+Or use the helper script (from the repo root):
+
+```bash
+./scripts/backup-sqlite.sh --keep 7
+```
+
+**Schedule with cron** (e.g. daily at 3:00, keep last 7 backups):
+
+```bash
+0 3 * * * cd /path/to/sirkulerekonomi && ./scripts/backup-sqlite.sh --keep 7
+```
+
+Install the cron job: `crontab -e` and add the line above (replace `/path/to/sirkulerekonomi` with the real path).
+
+### One-off / manual backup
 
 - **Option 1 (volume backup):** Back up the Docker volume `sqlite_data` using your preferred method (e.g. `docker run` with the volume mounted and copy the file).
 - **Option 2 (from container):** Copy the file out of the running web container:

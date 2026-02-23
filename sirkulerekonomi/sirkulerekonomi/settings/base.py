@@ -77,6 +77,9 @@ DATABASES = {
     }
 }
 
+# SQLite backup directory for backup_sqlite management command (default: data/backups)
+# SQLITE_BACKUP_DIR = BASE_DIR / 'data' / 'backups'
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
