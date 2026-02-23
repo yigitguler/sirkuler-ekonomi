@@ -8,7 +8,7 @@ from wagtail import urls as wagtail_urls
 from wagtail.documents import urls as wagtaildocs_urls
 from wagtail.contrib.sitemaps.views import sitemap
 
-from .views import robots_txt
+from .views import robots_txt, llms_txt
 from home.feeds import ArticleFeed
 from articles.api_views import post_article
 
@@ -18,6 +18,7 @@ urlpatterns = [
     path('documents/', include(wagtaildocs_urls)),
     path('sitemap.xml', sitemap),
     path('robots.txt', robots_txt),
+    path('llms.txt', llms_txt),
     path('feed/', ArticleFeed()),
     path('api/articles/', post_article),
     path('', include(wagtail_urls)),
