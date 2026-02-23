@@ -32,6 +32,9 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
-SECURE_SSL_REDIRECT = True
+# Redirect HTTP→HTTPS must be done by the reverse proxy (nginx/Caddy etc.). Django’s
+# SECURE_SSL_REDIRECT can cause ERR_TOO_MANY_REDIRECTS if the proxy doesn’t send
+# X-Forwarded-Proto: https.
+SECURE_SSL_REDIRECT = False
 
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
