@@ -9,6 +9,8 @@ services:
     environment:
       PYTHONPATH: /app/sirkulerekonomi
       DJANGO_SETTINGS_MODULE: sirkulerekonomi.settings.production
+      SITE_BASE_URL: https://sirkulerekonomi.com
+      DJANGO_ALLOWED_HOSTS: sirkulerekonomi.com,www.sirkulerekonomi.com
     user: root
 
   nginx:

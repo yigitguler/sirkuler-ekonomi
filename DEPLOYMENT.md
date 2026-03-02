@@ -69,6 +69,17 @@ Install the cron job: `crontab -e` and add the line above (replace `/path/to/sir
 
 Restore by placing `db.sqlite3` back into the volume or the data directory before starting the container.
 
+## Production environment
+
+- **SITE_BASE_URL** must be `https://sirkulerekonomi.com` in production. It is set in `docker-compose.production.yaml`; do not override it with `http://localhost:8000` or a dev value.
+- **Wagtail Site**: The production domain must have a matching Site record in the database with `is_default_site=True`. The migration `home.0006_ensure_production_site` creates or updates the site for `sirkulerekonomi.com` and sets it as default. If you restored a DB from dev and need to fix sites without re-running migrations, run in the production container: `python sirkulerekonomi/manage.py shell` and create/update the `wagtailcore.Site` for hostname `sirkulerekonomi.com`, set `is_default_site=True`, and point `root_page_id` to the homepage.
+
+**Verify after deployment:**
+
+- In the production container: `python sirkulerekonomi/manage.py shell` then `from wagtail.models import Site; print(list(Site.objects.values("hostname", "port", "is_default_site")))` — you should see `sirkulerekonomi.com` as default.
+- Check a few pages: canonical and `og:url` in the HTML should be `https://sirkulerekonomi.com/...`, not localhost.
+- Submit a form (e.g. Wagtail admin login) and confirm CSRF errors are gone.
+
 ## No database server
 
 - No RDS or PostgreSQL setup is required.

@@ -25,6 +25,11 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'sirkulerekonomi.com,www.
 
 SITE_BASE_URL = os.environ.get('SITE_BASE_URL', 'https://sirkulerekonomi.com')
 
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS',
+    'https://sirkulerekonomi.com,https://www.sirkulerekonomi.com',
+).split(',')
+
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_HSTS_SECONDS = 31536000
