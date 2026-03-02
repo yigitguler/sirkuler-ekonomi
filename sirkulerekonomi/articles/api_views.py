@@ -16,6 +16,50 @@ from wagtail.rich_text import RichText
 from .models import ArticleIndexPage, ArticlePage
 
 
+def _build_article_url(article):
+    base_url = getattr(settings, 'SITE_BASE_URL', '').rstrip('/')
+    return (base_url + article.get_url()) if base_url else article.get_url()
+
+
+def _streamfield_body_to_html(article):
+    """Serialize ArticlePage.body StreamField to a single HTML string."""
+    parts = []
+    base_url = getattr(settings, 'SITE_BASE_URL', '').rstrip('/')
+    for block in article.body:
+        if block.block_type == 'heading':
+            text = str(block.value).strip()
+            if text:
+                parts.append('<h2>%s</h2>' % _escape_html(text))
+        elif block.block_type == 'paragraph':
+            rt = block.value
+            if hasattr(rt, 'source') and rt.source:
+                parts.append(rt.source.strip())
+            else:
+                parts.append('<p>%s</p>' % _escape_html(str(rt)))
+        elif block.block_type == 'blockquote':
+            text = str(block.value).strip()
+            if text:
+                parts.append('<blockquote>%s</blockquote>' % _escape_html(text))
+        elif block.block_type == 'image' and block.value:
+            img = block.value
+            try:
+                rend = img.get_rendition('width-1200')
+                url = rend.url
+                if base_url and url.startswith('/'):
+                    url = base_url + url
+                parts.append('<img src="%s" alt="%s" />' % (_escape_html(url), _escape_html(img.title or '')))
+            except Exception:
+                pass
+    return ''.join(parts)
+
+
+def _escape_html(s):
+    if not s:
+        return ''
+    s = str(s)
+    return s.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
+
+
 def _strip_html(html):
     return re.sub(r'<[^>]+>', '', html).strip()
 
@@ -186,6 +230,167 @@ def _create_cover_image_from_base64(b64_data, title):
     image.height = h
     image.save()
     return image
+
+
+def _get_main_image_url(article, rendition_spec='width-600'):
+    if not article.main_image_id:
+        return None
+    try:
+        rend = article.main_image.get_rendition(rendition_spec)
+        url = rend.url
+        base_url = getattr(settings, 'SITE_BASE_URL', '').rstrip('/')
+        if base_url and url.startswith('/'):
+            url = base_url + url
+        return url
+    except Exception:
+        return None
+
+
+@csrf_exempt
+@require_http_methods(['GET', 'POST'])
+def article_list_or_create(request):
+    if not _check_auth(request):
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+    if request.method == 'GET':
+        return get_article_list(request)
+    return post_article(request)
+
+
+def get_article_list(request):
+    limit = min(int(request.GET.get('limit', 20)), 100)
+    offset = int(request.GET.get('offset', 0))
+    live_param = request.GET.get('live')
+    locale_code = (request.GET.get('locale') or '').strip()
+
+    qs = ArticlePage.objects.all().select_related('main_image', 'locale').order_by('-first_published_at')
+    if live_param is not None and live_param != '':
+        live_val = str(live_param).strip().lower() in ('true', '1', 'yes')
+        qs = qs.filter(live=live_val)
+    if locale_code:
+        qs = qs.filter(locale__language_code=locale_code)
+
+    count = qs.count()
+    page = qs[offset:offset + limit]
+    results = []
+    for article in page:
+        results.append({
+            'id': article.pk,
+            'title': article.title,
+            'slug': article.slug,
+            'url': _build_article_url(article),
+            'intro': article.intro or '',
+            'live': article.live,
+            'first_published_at': article.first_published_at.isoformat() if article.first_published_at else None,
+            'last_published_at': getattr(article, 'last_published_at', None)
+            and article.last_published_at.isoformat() or None,
+            'locale': article.locale.language_code if article.locale_id else None,
+            'main_image_url': _get_main_image_url(article),
+        })
+    out = {'results': results, 'count': count}
+    if offset + len(results) < count:
+        out['next_offset'] = offset + limit
+    if offset > 0:
+        out['previous_offset'] = max(0, offset - limit)
+    return JsonResponse(out)
+
+
+def _get_article_or_404(pk):
+    article = ArticlePage.objects.filter(pk=pk).select_related('main_image', 'locale').first()
+    if not article:
+        return None
+    return article
+
+
+@csrf_exempt
+@require_http_methods(['GET', 'PATCH'])
+def article_detail(request, id):
+    if not _check_auth(request):
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+    article = _get_article_or_404(id)
+    if not article:
+        return JsonResponse({'error': 'Not found'}, status=404)
+    if request.method == 'GET':
+        return get_article_detail(request, id)
+    return patch_article(request, id)
+
+
+def get_article_detail(request, id):
+    article = _get_article_or_404(id)
+    if not article:
+        return JsonResponse({'error': 'Not found'}, status=404)
+    data = {
+        'id': article.pk,
+        'title': article.title,
+        'slug': article.slug,
+        'url': _build_article_url(article),
+        'intro': article.intro or '',
+        'body': _streamfield_body_to_html(article),
+        'main_image_url': _get_main_image_url(article, 'width-1200'),
+        'meta_title': article.seo_title or '',
+        'meta_description': article.search_description or '',
+        'meta_keywords': article.meta_keywords or '',
+        'live': article.live,
+        'first_published_at': article.first_published_at.isoformat() if article.first_published_at else None,
+        'last_published_at': getattr(article, 'last_published_at', None) and article.last_published_at.isoformat() or None,
+        'locale': article.locale.language_code if article.locale_id else None,
+    }
+    return JsonResponse(data)
+
+
+def patch_article(request, id):
+    article = _get_article_or_404(id)
+    if not article:
+        return JsonResponse({'error': 'Not found'}, status=404)
+    try:
+        data = json.loads(request.body) if request.body else {}
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+
+    if 'title' in data:
+        article.title = (data.get('title') or '').strip()
+    if 'meta_title' in data:
+        article.seo_title = (data.get('meta_title') or '').strip()[:70]
+    if 'meta_description' in data:
+        article.search_description = (data.get('meta_description') or '').strip()[:500]
+    if 'intro' in data:
+        article.intro = (data.get('intro') or '')[:500]
+    if 'meta_keywords' in data:
+        article.meta_keywords = (data.get('meta_keywords') or '')[:255]
+    if 'body' in data:
+        body_raw = data.get('body') or ''
+        body_html = _markdown_to_html(body_raw)
+        article.body = _parse_body_to_stream_blocks(body_html)
+    if 'cover_image_url' in data or 'cover_image_base64' in data:
+        cover_image_url = (data.get('cover_image_url') or '').strip()
+        cover_image_base64 = data.get('cover_image_base64')
+        main_image = None
+        if cover_image_base64 is not None:
+            main_image = _create_cover_image_from_base64(cover_image_base64, article.title)
+        elif cover_image_url:
+            try:
+                main_image = _create_cover_image_from_url(cover_image_url, article.title)
+            except (OSError, ValueError, urllib.error.URLError):
+                main_image = None
+        if main_image is not None:
+            article.main_image = main_image
+    if 'live' in data:
+        live_val = data.get('live')
+        if isinstance(live_val, str):
+            live_val = live_val.strip().lower() in ('true', '1', 'yes')
+        article.live = bool(live_val)
+
+    revision = article.save_revision()
+    if article.live and revision:
+        revision.publish()
+
+    base_url = getattr(settings, 'SITE_BASE_URL', '').rstrip('/')
+    full_url = (base_url + article.get_url()) if base_url else article.get_url()
+    return JsonResponse({
+        'id': article.pk,
+        'url': full_url,
+        'slug': article.slug,
+        'published': article.live,
+    })
 
 
 @csrf_exempt

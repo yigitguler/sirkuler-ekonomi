@@ -10,7 +10,7 @@ from wagtail.contrib.sitemaps.views import sitemap
 
 from .views import robots_txt, llms_txt
 from home.feeds import ArticleFeed
-from articles.api_views import post_article
+from articles.api_views import article_list_or_create, article_detail
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -20,7 +20,8 @@ urlpatterns = [
     path('robots.txt', robots_txt),
     path('llms.txt', llms_txt),
     path('feed/', ArticleFeed()),
-    path('api/articles/', post_article),
+    path('api/articles/', article_list_or_create),
+    path('api/articles/<int:id>/', article_detail),
     path('', include(wagtail_urls)),
 ]
 

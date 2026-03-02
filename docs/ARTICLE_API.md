@@ -1,12 +1,6 @@
-# Article API – Posting articles to Haberler
+# Article API – Create, list, retrieve and update articles
 
-You can create articles automatically by sending a **POST** request to our article API. The request must include a shared secret in a header so only authorized clients can publish.
-
-## Endpoint
-
-- **URL:** `https://sirkulerekonomi.com/api/articles/`
-- **Method:** POST
-- **Content-Type:** application/json
+You can create, list, retrieve and update articles via the article API. All endpoints require a shared secret in a header.
 
 ## Authentication
 
@@ -17,7 +11,15 @@ Send the secret in one of these headers:
 
 (Use the same secret value we sent you separately. Do not share it.)
 
-## Request body
+---
+
+## POST – Create article
+
+- **URL:** `https://sirkulerekonomi.com/api/articles/`
+- **Method:** POST
+- **Content-Type:** application/json
+
+### Request body
 
 **Mandatory:** `title`, `meta_title`, `meta_description`
 
@@ -53,9 +55,84 @@ curl -X POST https://sirkulerekonomi.com/api/articles/ \
   }'
 ```
 
-## Responses
+### Responses (POST)
 
 - **201 Created** – Article was created. Response body includes `id`, `url`, `slug`, and `published` (whether it went live immediately).
 - **400 Bad Request** – Invalid JSON, missing mandatory field (`title`, `meta_title`, or `meta_description`), or invalid cover image (`cover_image_url` not an image, or `cover_image_base64` invalid/unsupported). Response includes an `error` message.
 - **401 Unauthorized** – Missing or wrong secret in the header.
 - **404 Not Found** – Our Haberler section is not available (contact us).
+
+---
+
+## GET – List articles
+
+- **URL:** `https://sirkulerekonomi.com/api/articles/`
+- **Method:** GET
+
+### Query parameters (optional)
+
+| Parameter | Description |
+|-----------|-------------|
+| limit     | Number of results per page (default 20, max 100). |
+| offset    | Number of results to skip (default 0). |
+| live      | Filter by published state: `true` or `false`. |
+| locale    | Filter by locale, e.g. `tr`, `en`. |
+
+### Response
+
+JSON object:
+
+- **results** – Array of article summaries. Each item: `id`, `title`, `slug`, `url` (full URL), `intro`, `live`, `first_published_at`, `last_published_at`, `locale`, `main_image_url`.
+- **count** – Total number of articles matching the filters.
+- **next_offset** – Present if there are more results (use as `offset` for next page).
+- **previous_offset** – Present if offset &gt; 0.
+
+- **401 Unauthorized** – Missing or wrong secret in the header.
+
+---
+
+## GET – Retrieve one article
+
+- **URL:** `https://sirkulerekonomi.com/api/articles/<id>/`
+- **Method:** GET
+- **&lt;id&gt;** – Article primary key (integer).
+
+### Response
+
+JSON object with full content: `id`, `title`, `slug`, `url`, `intro`, `body` (article body as a single **HTML** string), `main_image_url`, `meta_title`, `meta_description`, `meta_keywords`, `live`, `first_published_at`, `last_published_at`, `locale`.
+
+- **200 OK** – Article found.
+- **401 Unauthorized** – Missing or wrong secret in the header.
+- **404 Not Found** – No article with that id. Response: `{ "error": "Not found" }`.
+
+---
+
+## PATCH – Update article
+
+- **URL:** `https://sirkulerekonomi.com/api/articles/<id>/`
+- **Method:** PATCH
+- **Content-Type:** application/json
+- **&lt;id&gt;** – Article primary key (integer).
+
+Partial update: send only the fields you want to change. All fields are optional.
+
+| Field              | Description (same as POST where applicable) |
+|--------------------|----------------------------------------------|
+| title              | Article title. |
+| meta_title         | SEO title (max 70 chars). |
+| meta_description   | Meta description (max 500 chars). |
+| intro              | Short summary (max 500 chars). |
+| body               | Article body as **Markdown** (converted to StreamField blocks). |
+| meta_keywords      | Meta keywords (max 255 chars). |
+| cover_image_url    | Public URL of cover image; we download and set as main image. |
+| cover_image_base64 | Cover image as base64 (raw or data URL). |
+| live               | If `true`, publish the current revision; if `false`, leave as draft. |
+
+### Response
+
+Same as POST success: `id`, `url`, `slug`, `published` (whether the article is now live).
+
+- **200 OK** – Article updated.
+- **400 Bad Request** – Invalid JSON. Response includes an `error` message.
+- **401 Unauthorized** – Missing or wrong secret in the header.
+- **404 Not Found** – No article with that id. Response: `{ "error": "Not found" }`.
