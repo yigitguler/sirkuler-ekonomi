@@ -353,7 +353,7 @@ def patch_article(request, id):
     if 'meta_description' in data:
         article.search_description = (data.get('meta_description') or '').strip()[:500]
     if 'intro' in data:
-        article.intro = (data.get('intro') or '')[:500]
+        article.intro = (data.get('intro') or '')[:1000]
     if 'meta_keywords' in data:
         article.meta_keywords = (data.get('meta_keywords') or '')[:255]
     if 'body' in data:
@@ -416,7 +416,7 @@ def post_article(request):
     if not meta_description:
         return JsonResponse({'error': 'meta_description is required'}, status=400)
 
-    intro = (data.get('intro') or '')[:500]
+    intro = (data.get('intro') or '')[:1000]
     body_raw = data.get('body') or ''
     body_html = _markdown_to_html(body_raw)
     meta_keywords = (data.get('meta_keywords') or '')[:255]

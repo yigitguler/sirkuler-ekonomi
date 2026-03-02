@@ -28,7 +28,7 @@ Send the secret in one of these headers:
 | title             | Yes      | Article title                                                              |
 | meta_title        | Yes      | SEO title for &lt;title&gt;, og:title, twitter:title (max 70 chars)        |
 | meta_description  | Yes      | Meta description and og:description (max 500 chars)                         |
-| intro             | No       | Short summary (max 500 chars)                                               |
+| intro             | No       | Short summary (max 1000 chars)                                              |
 | body              | No       | Article body as **Markdown**. Converted to HTML then parsed into Wagtail StreamField blocks (paragraph, heading, blockquote). Supports **extra** (tables, fenced code) and **nl2br** (newlines as `<br>`). |
 | meta_keywords     | No       | Meta keywords tag (max 255 chars)                                          |
 | cover_image_url   | No       | Public URL of the cover image; we download it and use as og:image         |
@@ -121,7 +121,7 @@ Partial update: send only the fields you want to change. All fields are optional
 | title              | Article title. |
 | meta_title         | SEO title (max 70 chars). |
 | meta_description   | Meta description (max 500 chars). |
-| intro              | Short summary (max 500 chars). |
+| intro              | Short summary (max 1000 chars). |
 | body               | Article body as **Markdown** (converted to StreamField blocks). |
 | meta_keywords      | Meta keywords (max 255 chars). |
 | cover_image_url    | Public URL of cover image; we download and set as main image. |

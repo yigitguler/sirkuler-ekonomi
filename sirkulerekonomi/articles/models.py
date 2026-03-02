@@ -24,7 +24,7 @@ class ArticleIndexPage(Page):
 
 
 class ArticlePage(Page):
-    intro = models.CharField(max_length=500, blank=True, verbose_name='Özet')
+    intro = models.CharField(max_length=1000, blank=True, verbose_name='Özet')
     meta_keywords = models.CharField(max_length=255, blank=True, verbose_name='Meta keywords')
     main_image = models.ForeignKey(
         'wagtailimages.Image',
@@ -68,7 +68,7 @@ class ArticlePage(Page):
         if not base and request:
             base = request.scheme + '://' + request.get_host()
         article_url = (base + self.get_url()) if base else self.full_url
-        description = (self.search_description or self.intro or '')[:500]
+        description = (self.search_description or self.intro or '')[:1000]
         schema = {
             '@context': 'https://schema.org',
             '@type': 'NewsArticle',
