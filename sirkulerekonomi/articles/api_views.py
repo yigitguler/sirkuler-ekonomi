@@ -4,6 +4,7 @@ import json
 import re
 import urllib.error
 import urllib.request
+from bs4 import BeautifulSoup
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.http import JsonResponse
@@ -72,51 +73,38 @@ def _markdown_to_html(md):
 
 
 def _parse_body_to_stream_blocks(html):
-    """Parse HTML into Wagtail StreamField blocks: heading, paragraph, blockquote."""
+    """Parse HTML into Wagtail StreamField blocks using an HTML parser.
+    Supports: heading (h1-h6), paragraph, blockquote. Other block-level elements
+    (div, ul, ol, pre, table) are converted to paragraph(s) so content is not lost.
+    """
     if not (html or '').strip():
         return []
     html = html.strip()
+    soup = BeautifulSoup(html, 'html.parser')
+    block_as_paragraph = ('div', 'ul', 'ol', 'pre', 'table')
+
+    def top_level_elements():
+        roots = soup.contents
+        if len(roots) == 1 and hasattr(roots[0], 'name') and roots[0].name in ('div', 'section'):
+            return list(roots[0].contents)
+        return roots
+
     blocks = []
-    block_tags = ('p', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote')
-    i = 0
-    while i < len(html):
-        m = re.search(r'<([a-z][a-z0-9]*)(?:\s[^>]*)?>', html[i:], re.I)
-        if not m:
-            break
-        tag = m.group(1).lower()
-        if tag not in block_tags:
-            i += m.end()
+    for el in top_level_elements():
+        if not hasattr(el, 'name') or not el.name:
             continue
-        start = i + m.end()
-        close = '</' + tag + '>'
-        depth = 1
-        j = start
-        end_pos = -1
-        while j < len(html):
-            next_close = html.find(close, j)
-            if next_close == -1:
-                break
-            next_open = html.find('<' + tag, j)
-            if next_open != -1 and next_open < next_close:
-                depth += 1
-                j = next_open + 1
-            else:
-                depth -= 1
-                if depth == 0:
-                    end_pos = next_close
-                    break
-                j = next_close + len(close)
-        if end_pos == -1:
-            i = start
-            continue
-        inner = html[start:end_pos]
-        i = end_pos + len(close)
+        tag = el.name.lower()
         if tag == 'p':
-            blocks.append(('paragraph', RichText('<p>' + inner + '</p>')))
-        elif tag in ('h2', 'h3', 'h4', 'h5', 'h6'):
-            blocks.append(('heading', _strip_html(inner)))
+            blocks.append(('paragraph', RichText(str(el))))
+        elif tag in ('h1', 'h2', 'h3', 'h4', 'h5', 'h6'):
+            blocks.append(('heading', el.get_text(separator=' ', strip=True)))
         elif tag == 'blockquote':
-            blocks.append(('blockquote', _strip_html(inner)))
+            text = el.get_text(separator=' ', strip=True)
+            blocks.append(('blockquote', text))
+        elif tag in block_as_paragraph:
+            text = el.get_text(separator=' ', strip=True)
+            if text:
+                blocks.append(('paragraph', RichText('<p>%s</p>' % _escape_html(text))))
     if not blocks and html:
         blocks.append(('paragraph', RichText(html)))
     return blocks

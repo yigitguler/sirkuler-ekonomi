@@ -1,3 +1,4 @@
+import json
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -78,3 +79,32 @@ class PostArticleAPITests(TestCase):
         self.assertIn('id', data)
         self.assertIn('url', data)
         self.assertIn('slug', data)
+
+    def test_post_with_body_roundtrips_correctly(self):
+        body_md = '## Test Heading\n\nA paragraph with **bold**.\n\n> A blockquote line.'
+        payload = {
+            'title': 'Body Roundtrip Test',
+            'meta_title': 'Body Roundtrip SEO',
+            'meta_description': 'Testing body import.',
+            'intro': 'Intro',
+            'body': body_md,
+        }
+        response = self.client.post(
+            '/api/articles/',
+            data=json.dumps(payload),
+            content_type='application/json',
+            HTTP_X_API_KEY='test-secret',
+        )
+        self.assertEqual(response.status_code, 201, response.content)
+        data = response.json()
+        article_id = data['id']
+        detail = self.client.get(
+            '/api/articles/%d/' % article_id,
+            HTTP_X_API_KEY='test-secret',
+        )
+        self.assertEqual(detail.status_code, 200)
+        body_html = detail.json().get('body', '')
+        self.assertIn('Test Heading', body_html)
+        self.assertIn('A paragraph with', body_html)
+        self.assertIn('bold', body_html)
+        self.assertIn('A blockquote line', body_html)

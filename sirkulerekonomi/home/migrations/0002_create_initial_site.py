@@ -34,7 +34,7 @@ def create_initial_site(apps, schema_editor):
         return parent_path + format(parent_numchild + 1, '04d')
 
     home_path = next_path(root.path, root.numchild)
-    home_content_type = ContentType.objects.get(app_label='home', model='homepage')
+    home_content_type, _ = ContentType.objects.get_or_create(app_label='home', model='homepage')
     home = HomePage(
         title='Ana Sayfa',
         slug='ana-sayfa',
@@ -49,7 +49,7 @@ def create_initial_site(apps, schema_editor):
     home.save()
 
     index_path = next_path(home.path, home.numchild)
-    index_content_type = ContentType.objects.get(app_label='articles', model='articleindexpage')
+    index_content_type, _ = ContentType.objects.get_or_create(app_label='articles', model='articleindexpage')
     index = ArticleIndexPage(
         title='Haberler',
         slug='haberler',
