@@ -12,7 +12,7 @@
     <meta property="og:type" content="{% block og_type %}website{% endblock %}">
     <meta property="og:title" content="{% block og_title %}Sirküler Ekonomi{% endblock %}">
     <meta property="og:description" content="{% block og_description %}Sirküler Ekonomi: Türkiye'nin sürdürülebilirlik ve döngüsel ekonomi haber platformu. Geri dönüşüm, yeşil teknoloji ve atık yönetimi güncellemeleri.{% endblock %}">
-    <meta property="og:url" content="{% block og_url %}{% if site_base_url %}{{ site_base_url }}{% if page %}{{ page.url }}{% else %}{{ request.path }}{% endif %}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endif %}{% endblock %}">
+    <meta property="og:url" content="{% block og_url %}{% if site_base_url %}{{ site_base_url }}{{ request.path }}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endif %}{% endblock %}">
     {% block og_image_meta %}{% endblock %}
     <meta property="og:locale" content="tr_TR">
     <meta name="twitter:card" content="summary_large_image">
@@ -20,7 +20,7 @@
     <meta name="twitter:description" content="{% block twitter_description %}Sirküler Ekonomi: Türkiye'nin sürdürülebilirlik ve döngüsel ekonomi haber platformu. Geri dönüşüm, yeşil teknoloji ve atık yönetimi güncellemeleri.{% endblock %}">
     {% block canonical_hreflang %}
     {% if site_base_url %}
-    <link rel="canonical" href="{{ site_base_url }}{% if page %}{{ page.url }}{% else %}{{ request.path }}{% endif %}">
+    <link rel="canonical" href="{{ site_base_url }}{{ request.path }}">
     {% else %}
     {% if page %}
     <link rel="canonical" href="{{ page.full_url }}">
