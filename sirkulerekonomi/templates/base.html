@@ -13,7 +13,15 @@
     <meta property="og:title" content="{% block og_title %}Sirküler Ekonomi{% endblock %}">
     <meta property="og:description" content="{% block og_description %}Sirküler Ekonomi: Türkiye'nin sürdürülebilirlik ve döngüsel ekonomi haber platformu. Geri dönüşüm, yeşil teknoloji ve atık yönetimi güncellemeleri.{% endblock %}">
     <meta property="og:url" content="{% block og_url %}{% if site_base_url %}{{ site_base_url }}{{ request.path }}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ request.path }}{% endif %}{% endblock %}">
-    {% block og_image_meta %}{% endblock %}
+    {% block og_image_meta %}
+    <meta property="og:image" content="{% if site_base_url %}{{ site_base_url }}{% static 'images/default-og.png' %}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/default-og.png' %}{% endif %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Sirküler Ekonomi - Döngüsel Ekonomi Haber Platformu">
+    {% endblock %}
+    {% block twitter_image_meta %}
+    <meta name="twitter:image" content="{% if site_base_url %}{{ site_base_url }}{% static 'images/default-og.png' %}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'images/default-og.png' %}{% endif %}">
+    {% endblock %}
     <meta property="og:locale" content="tr_TR">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{% block twitter_title %}Sirküler Ekonomi{% endblock %}">
@@ -111,7 +119,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5">
             <div class="flex items-center justify-between">
                 <a href="/" class="flex items-center gap-0 hover:text-forest-200 transition-colors focus:outline-none focus:ring-2 focus:ring-forest-500 focus:ring-offset-2 focus:ring-offset-forest-900 rounded">
-                    <img src="{% static 'images/logo.png' %}" alt="" class="h-10 sm:h-12 w-auto mix-blend-lighten" width="120" height="48">
+                    <img src="{% static 'images/logo.png' %}" alt="Sirküler Ekonomi logosu" class="h-10 sm:h-12 w-auto mix-blend-lighten" width="120" height="48">
                     <span class="font-display text-2xl sm:text-3xl font-bold tracking-tight">Sirküler Ekonomi</span>
                 </a>
 
@@ -143,7 +151,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 <div class="sm:col-span-2 lg:col-span-1">
                     <div class="flex items-center gap-0">
-                        <img src="{% static 'images/logo.png' %}" alt="" class="h-10 w-auto mix-blend-lighten" width="120" height="48">
+                        <img src="{% static 'images/logo.png' %}" alt="Sirküler Ekonomi logosu" class="h-10 w-auto mix-blend-lighten" width="120" height="48">
                         <span class="font-display text-xl font-bold text-white">Sirküler Ekonomi</span>
                     </div>
                     <p class="text-sm text-forest-300 mt-3 leading-relaxed">Sürdürülebilirlik ve döngüsel ekonomi alanındaki gelişmeleri takip eden bağımsız haber platformu.</p>

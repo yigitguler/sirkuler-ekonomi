@@ -18,6 +18,14 @@
 {{ block.super }}
 {% endif %}
 {% endblock %}
+{% block twitter_image_meta %}
+{% if page.main_image %}
+{% image page.main_image width-1200 as twitter_img %}
+<meta name="twitter:image" content="{% if site_base_url %}{{ site_base_url }}{{ twitter_img.url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{{ twitter_img.url }}{% endif %}">
+{% else %}
+{{ block.super }}
+{% endif %}
+{% endblock %}
 {% block twitter_title %}{{ page.seo_title|default:page.title }}{% endblock %}
 {% block twitter_description %}{{ page.search_description|default:page.intro|striptags|truncatewords:30 }}{% endblock %}
 
